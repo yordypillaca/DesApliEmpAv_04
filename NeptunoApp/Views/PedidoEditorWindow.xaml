@@ -1,0 +1,124 @@
+<Window x:Class="NeptunoApp.Views.PedidoEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:NeptunoApp.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:PedidoEditorViewModel}"
+        Title="{Binding Titulo}" Height="640" Width="860">
+    <DockPanel Margin="16">
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Titulo}"
+                   FontSize="16" FontWeight="Bold" Margin="0,0,0,12" />
+
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Guardar" Command="{Binding AceptarCommand}" IsDefault="True" />
+                <Button Content="Cancelar" Command="{Binding CancelarCommand}" IsCancel="True" />
+            </StackPanel>
+            <TextBlock Text="{Binding MensajeEstado}" Foreground="Firebrick" Margin="0,8,0,0" />
+        </StackPanel>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Cliente" />
+                <ComboBox Grid.Row="1" Grid.Column="0"
+                          ItemsSource="{Binding Clientes}"
+                          SelectedItem="{Binding ClienteSeleccionado}"
+                          DisplayMemberPath="Empresa" />
+
+                <TextBlock Grid.Row="0" Grid.Column="2" Text="Empleado" />
+                <ComboBox Grid.Row="1" Grid.Column="2"
+                          ItemsSource="{Binding Empleados}"
+                          SelectedItem="{Binding EmpleadoSeleccionado}"
+                          DisplayMemberPath="NombreCompleto" />
+
+                <TextBlock Grid.Row="0" Grid.Column="4" Text="Transportista" />
+                <ComboBox Grid.Row="1" Grid.Column="4"
+                          ItemsSource="{Binding Transportistas}"
+                          SelectedItem="{Binding TransportistaSeleccionado}"
+                          DisplayMemberPath="CompaniaNombre" />
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Fecha pedido" />
+                <DatePicker Grid.Row="3" Grid.Column="0" SelectedDate="{Binding FechaPedido}" />
+
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="Fecha requerida" />
+                <DatePicker Grid.Row="3" Grid.Column="2" SelectedDate="{Binding FechaRequerida}" />
+
+                <TextBlock Grid.Row="2" Grid.Column="4" Text="Fecha envío" />
+                <DatePicker Grid.Row="3" Grid.Column="4" SelectedDate="{Binding FechaEnvio}" />
+            </Grid>
+
+            <Grid Grid.Row="1" Margin="0,8,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Destinatario" />
+                <TextBox Grid.Row="1" Text="{Binding Destinatario, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Grid.Row="0" Grid.Column="2" Text="Ciudad destino" />
+                <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding CiudadDestino, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Grid.Row="0" Grid.Column="4" Text="País destino" />
+                <TextBox Grid.Row="1" Grid.Column="4" Text="{Binding PaisDestino, UpdateSourceTrigger=PropertyChanged}" />
+            </Grid>
+
+            <DockPanel Grid.Row="2">
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                    <ComboBox ItemsSource="{Binding Productos}"
+                              SelectedItem="{Binding ProductoParaAgregar}"
+                              DisplayMemberPath="NombreProducto"
+                              Width="260" Margin="0,0,8,0" />
+                    <TextBlock Text="Cant:" VerticalAlignment="Center" Margin="0,0,6,8" />
+                    <TextBox Text="{Binding CantidadNueva, UpdateSourceTrigger=PropertyChanged}" Width="60" Margin="0,0,8,0" />
+                    <TextBlock Text="Desc:" VerticalAlignment="Center" Margin="0,0,6,8" />
+                    <TextBox Text="{Binding DescuentoNuevo, UpdateSourceTrigger=PropertyChanged}" Width="70" Margin="0,0,8,0" />
+                    <Button Content="Agregar" Command="{Binding AgregarLineaCommand}" />
+                    <Button Content="Quitar" Command="{Binding QuitarLineaCommand}" />
+                    <TextBlock Text="{Binding Total, StringFormat=Total: {0:N2}}"
+                               VerticalAlignment="Center" FontWeight="Bold" Margin="12,0,0,8" />
+                </StackPanel>
+
+                <DataGrid ItemsSource="{Binding Detalles}"
+                          SelectedItem="{Binding DetalleSeleccionado}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Producto" Binding="{Binding NombreProducto}" Width="*" />
+                        <DataGridTextColumn Header="Precio" Binding="{Binding PrecioUnidad, StringFormat={}{0:N2}}" Width="90" />
+                        <DataGridTextColumn Header="Cantidad" Binding="{Binding Cantidad}" Width="80" />
+                        <DataGridTextColumn Header="Descuento" Binding="{Binding Descuento, StringFormat={}{0:P0}}" Width="90" />
+                        <DataGridTextColumn Header="Importe" Binding="{Binding Importe, StringFormat={}{0:N2}}" Width="90" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>

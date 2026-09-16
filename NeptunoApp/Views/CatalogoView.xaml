@@ -1,0 +1,21 @@
+<UserControl x:Class="NeptunoApp.Views.CatalogoView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:NeptunoApp.ViewModels"
+             xmlns:views="clr-namespace:NeptunoApp.Views"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:CatalogoHubViewModel}">
+    <TabControl SelectedIndex="{Binding TabSeleccionado}">
+        <TabItem Header="Productos">
+            <views:ProductosView DataContext="{Binding Productos}" Margin="8" />
+        </TabItem>
+        <TabItem Header="Categorías">
+            <views:CategoriasView DataContext="{Binding Categorias}" Margin="8" />
+        </TabItem>
+        <TabItem Header="Proveedores">
+            <views:ProveedoresView DataContext="{Binding Proveedores}" Margin="8" />
+        </TabItem>
+    </TabControl>
+</UserControl>

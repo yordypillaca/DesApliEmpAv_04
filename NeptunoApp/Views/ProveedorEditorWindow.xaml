@@ -1,0 +1,69 @@
+<Window x:Class="NeptunoApp.Views.ProveedorEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:NeptunoApp.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:ProveedorEditorViewModel}"
+        Title="{Binding Titulo}" Height="520" Width="520"
+        ResizeMode="NoResize">
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="130" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="{Binding Titulo}"
+                   FontSize="16" FontWeight="Bold" Margin="0,0,0,12" />
+
+        <TextBlock Grid.Row="1" Text="Compañía:" VerticalAlignment="Center" />
+        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CompaniaNombre, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="2" Text="Contacto:" VerticalAlignment="Center" />
+        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding NombreContacto, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="3" Text="Cargo:" VerticalAlignment="Center" />
+        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding CargoContacto, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="4" Text="Dirección:" VerticalAlignment="Center" />
+        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Direccion, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="5" Text="Ciudad:" VerticalAlignment="Center" />
+        <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Ciudad, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="6" Text="Código postal:" VerticalAlignment="Center" />
+        <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding CodigoPostal, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="7" Text="País:" VerticalAlignment="Center" />
+        <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding Pais, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="8" Text="Teléfono:" VerticalAlignment="Center" />
+        <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding Telefono, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="9" Text="Fax:" VerticalAlignment="Center" />
+        <TextBox Grid.Row="9" Grid.Column="1" Text="{Binding Fax, UpdateSourceTrigger=PropertyChanged}" />
+
+        <StackPanel Grid.Row="10" Grid.Column="1" Orientation="Horizontal">
+            <Button Content="Guardar" Command="{Binding AceptarCommand}" IsDefault="True" />
+            <Button Content="Cancelar" Command="{Binding CancelarCommand}" IsCancel="True" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="11" Grid.ColumnSpan="2" Text="{Binding MensajeEstado}"
+                   Foreground="Firebrick" Margin="0,10,0,0" TextWrapping="Wrap" />
+    </Grid>
+</Window>
