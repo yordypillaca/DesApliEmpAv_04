@@ -15,6 +15,7 @@
   <ItemGroup>
     <None Include="Scripts\01_NeptunoDB.sql" />
     <None Include="Scripts\02_ProcedimientosAlmacenados.sql" />
+    <None Include="Scripts\03_CampoActivo.sql" />
   </ItemGroup>
 
 </Project>

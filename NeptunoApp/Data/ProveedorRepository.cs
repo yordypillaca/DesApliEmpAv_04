@@ -5,8 +5,9 @@ using NeptunoApp.Models;
 namespace NeptunoApp.Data;
 
 /// <summary>
-/// Acceso a proveedores en modo CONECTADO mediante procedimientos almacenados.
-/// Incluye búsqueda por NombreContacto y Ciudad.
+/// Acceso a proveedores en modo CONECTADO.
+/// Las escrituras (insertar, actualizar y baja lógica) usan ExecuteNonQuery.
+/// El listado y la búsqueda solo devuelven registros con Activo = 1.
 /// </summary>
 public class ProveedorRepository
 {
@@ -62,6 +63,7 @@ public class ProveedorRepository
         idParam.Direction = ParameterDirection.Output;
 
         connection.Open();
+        // Alta: ExecuteNonQuery ejecuta usp_Proveedor_Insertar.
         command.ExecuteNonQuery();
         return (int)idParam.Value;
     }
@@ -76,6 +78,7 @@ public class ProveedorRepository
         AgregarParametros(command, proveedor, incluirId: true);
 
         connection.Open();
+        // Edición: ExecuteNonQuery ejecuta usp_Proveedor_Actualizar.
         command.ExecuteNonQuery();
     }
 
@@ -89,6 +92,7 @@ public class ProveedorRepository
         command.Parameters.AddWithValue("@ProveedorID", proveedorId);
 
         connection.Open();
+        // Baja lógica: ExecuteNonQuery ejecuta usp_Proveedor_Eliminar (Activo = 0).
         command.ExecuteNonQuery();
     }
 

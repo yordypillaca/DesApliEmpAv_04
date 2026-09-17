@@ -24,7 +24,8 @@ GO
 CREATE TABLE dbo.Categorias (
     CategoriaID     INT IDENTITY(1,1) PRIMARY KEY,
     NombreCategoria NVARCHAR(30)  NOT NULL,
-    Descripcion     NVARCHAR(200) NULL
+    Descripcion     NVARCHAR(200) NULL,
+    Activo          BIT NOT NULL CONSTRAINT DF_Categorias_Activo DEFAULT (1)
 );
 GO
 
@@ -38,7 +39,8 @@ CREATE TABLE dbo.Proveedores (
     CodigoPostal    NVARCHAR(10)  NULL,
     Pais            NVARCHAR(30)  NULL,
     Telefono        NVARCHAR(24)  NULL,
-    Fax             NVARCHAR(24)  NULL
+    Fax             NVARCHAR(24)  NULL,
+    Activo          BIT NOT NULL CONSTRAINT DF_Proveedores_Activo DEFAULT (1)
 );
 GO
 
@@ -82,6 +84,7 @@ CREATE TABLE dbo.Productos (
     UnidadesEnPedido     SMALLINT       NOT NULL DEFAULT 0,
     NivelDeReorden       SMALLINT       NOT NULL DEFAULT 0,
     Descontinuado        BIT            NOT NULL DEFAULT 0,
+    Activo               BIT            NOT NULL CONSTRAINT DF_Productos_Activo DEFAULT (1),
     CONSTRAINT FK_Productos_Proveedores FOREIGN KEY (ProveedorID) REFERENCES dbo.Proveedores(ProveedorID),
     CONSTRAINT FK_Productos_Categorias  FOREIGN KEY (CategoriaID) REFERENCES dbo.Categorias(CategoriaID)
 );
@@ -98,6 +101,7 @@ CREATE TABLE dbo.Pedidos (
     Destinatario    NVARCHAR(60) NULL,
     CiudadDestino   NVARCHAR(30) NULL,
     PaisDestino     NVARCHAR(30) NULL,
+    Activo          BIT NOT NULL CONSTRAINT DF_Pedidos_Activo DEFAULT (1),
     CONSTRAINT FK_Pedidos_Clientes       FOREIGN KEY (ClienteID)       REFERENCES dbo.Clientes(ClienteID),
     CONSTRAINT FK_Pedidos_Empleados      FOREIGN KEY (EmpleadoID)      REFERENCES dbo.Empleados(EmpleadoID),
     CONSTRAINT FK_Pedidos_Transportistas FOREIGN KEY (TransportistaID) REFERENCES dbo.Transportistas(TransportistaID)

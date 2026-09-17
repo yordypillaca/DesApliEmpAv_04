@@ -5,7 +5,8 @@ using NeptunoApp.Models;
 namespace NeptunoApp.Data;
 
 /// <summary>
-/// Acceso a categorías en modo CONECTADO mediante procedimientos almacenados.
+/// Acceso a categorías en modo CONECTADO.
+/// Las escrituras (insertar, actualizar y baja lógica) usan ExecuteNonQuery.
 /// </summary>
 public class CategoriaRepository
 {
@@ -41,6 +42,7 @@ public class CategoriaRepository
         idParam.Direction = ParameterDirection.Output;
 
         connection.Open();
+        // Alta: ExecuteNonQuery ejecuta usp_Categoria_Insertar.
         command.ExecuteNonQuery();
         return (int)idParam.Value;
     }
@@ -57,6 +59,7 @@ public class CategoriaRepository
         command.Parameters.AddWithValue("@Descripcion", (object?)categoria.Descripcion ?? DBNull.Value);
 
         connection.Open();
+        // Edición: ExecuteNonQuery ejecuta usp_Categoria_Actualizar.
         command.ExecuteNonQuery();
     }
 
@@ -70,6 +73,7 @@ public class CategoriaRepository
         command.Parameters.AddWithValue("@CategoriaID", categoriaId);
 
         connection.Open();
+        // Baja lógica: ExecuteNonQuery ejecuta usp_Categoria_Eliminar (Activo = 0).
         command.ExecuteNonQuery();
     }
 

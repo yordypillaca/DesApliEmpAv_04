@@ -5,7 +5,8 @@ using NeptunoApp.Models;
 namespace NeptunoApp.Data;
 
 /// <summary>
-/// Acceso a productos en modo CONECTADO mediante procedimientos almacenados.
+/// Acceso a productos en modo CONECTADO.
+/// Las escrituras (insertar, actualizar y baja lógica) usan ExecuteNonQuery.
 /// </summary>
 public class ProductoRepository
 {
@@ -54,6 +55,7 @@ public class ProductoRepository
         idParam.Direction = ParameterDirection.Output;
 
         connection.Open();
+        // Alta: ExecuteNonQuery ejecuta usp_Producto_Insertar.
         command.ExecuteNonQuery();
         return (int)idParam.Value;
     }
@@ -68,6 +70,7 @@ public class ProductoRepository
         AgregarParametros(command, producto, incluirId: true);
 
         connection.Open();
+        // Edición: ExecuteNonQuery ejecuta usp_Producto_Actualizar.
         command.ExecuteNonQuery();
     }
 
@@ -81,6 +84,7 @@ public class ProductoRepository
         command.Parameters.AddWithValue("@ProductoID", productoId);
 
         connection.Open();
+        // Baja lógica: ExecuteNonQuery ejecuta usp_Producto_Eliminar (Activo = 0).
         command.ExecuteNonQuery();
     }
 

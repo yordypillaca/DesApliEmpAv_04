@@ -6,7 +6,7 @@ namespace NeptunoApp.Data;
 
 /// <summary>
 /// Acceso a pedidos y detalles en modo CONECTADO.
-/// El guardado de cabecera + líneas se ejecuta en una transacción.
+/// Alta, edición y baja lógica de la cabecera se ejecutan con ExecuteNonQuery.
 /// </summary>
 public class PedidoRepository
 {
@@ -121,6 +121,7 @@ public class PedidoRepository
         command.Parameters.AddWithValue("@PedidoID", pedidoId);
 
         connection.Open();
+        // Baja lógica: ExecuteNonQuery ejecuta usp_Pedido_Eliminar (Activo = 0).
         command.ExecuteNonQuery();
     }
 
@@ -133,6 +134,7 @@ public class PedidoRepository
         AgregarParametrosCabecera(command, pedido, incluirId: false);
         var idParam = command.Parameters.Add("@PedidoID", SqlDbType.Int);
         idParam.Direction = ParameterDirection.Output;
+        // Alta: ExecuteNonQuery ejecuta usp_Pedido_Insertar.
         command.ExecuteNonQuery();
         return (int)idParam.Value;
     }
@@ -144,6 +146,7 @@ public class PedidoRepository
             CommandType = CommandType.StoredProcedure
         };
         AgregarParametrosCabecera(command, pedido, incluirId: true);
+        // Edición: ExecuteNonQuery ejecuta usp_Pedido_Actualizar.
         command.ExecuteNonQuery();
         return pedido.PedidoID;
     }

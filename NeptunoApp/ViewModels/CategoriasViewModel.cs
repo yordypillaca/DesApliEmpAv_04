@@ -105,7 +105,7 @@ public class CategoriasViewModel : ViewModelBase
 
     private void Eliminar()
     {
-        if (Seleccionada is null || !DialogService.Confirmar($"¿Eliminar la categoría \"{Seleccionada.NombreCategoria}\"?"))
+        if (Seleccionada is null || !DialogService.Confirmar($"¿Dar de baja la categoría \"{Seleccionada.NombreCategoria}\"? El registro no se borra, solo se marca como inactivo."))
         {
             return;
         }
@@ -114,7 +114,7 @@ public class CategoriasViewModel : ViewModelBase
         {
             _repositorio.Eliminar(Seleccionada.CategoriaID);
             Cargar();
-            MensajeEstado = "Categoría eliminada.";
+            MensajeEstado = "Categoría dada de baja (eliminación lógica).";
         }
         catch (Exception ex)
         {

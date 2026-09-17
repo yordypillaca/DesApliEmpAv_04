@@ -29,6 +29,7 @@ BEGIN
     FROM dbo.Productos p
     LEFT JOIN dbo.Categorias c ON c.CategoriaID = p.CategoriaID
     LEFT JOIN dbo.Proveedores pr ON pr.ProveedorID = p.ProveedorID
+    WHERE p.Activo = 1
     ORDER BY p.NombreProducto;
 END
 GO
@@ -116,13 +117,10 @@ CREATE OR ALTER PROCEDURE dbo.usp_Producto_Eliminar
 AS
 BEGIN
     SET NOCOUNT ON;
-    IF EXISTS (SELECT 1 FROM dbo.DetallePedidos WHERE ProductoID = @ProductoID)
-    BEGIN
-        RAISERROR(N'No se puede eliminar el producto porque está asociado a pedidos.', 16, 1);
-        RETURN;
-    END
-
-    DELETE FROM dbo.Productos WHERE ProductoID = @ProductoID;
+    UPDATE dbo.Productos
+    SET Activo = 0
+    WHERE ProductoID = @ProductoID
+      AND Activo = 1;
 END
 GO
 
@@ -136,6 +134,7 @@ BEGIN
     SET NOCOUNT ON;
     SELECT CategoriaID, NombreCategoria, Descripcion
     FROM dbo.Categorias
+    WHERE Activo = 1
     ORDER BY NombreCategoria;
 END
 GO
@@ -184,13 +183,10 @@ CREATE OR ALTER PROCEDURE dbo.usp_Categoria_Eliminar
 AS
 BEGIN
     SET NOCOUNT ON;
-    IF EXISTS (SELECT 1 FROM dbo.Productos WHERE CategoriaID = @CategoriaID)
-    BEGIN
-        RAISERROR(N'No se puede eliminar la categoría porque tiene productos asociados.', 16, 1);
-        RETURN;
-    END
-
-    DELETE FROM dbo.Categorias WHERE CategoriaID = @CategoriaID;
+    UPDATE dbo.Categorias
+    SET Activo = 0
+    WHERE CategoriaID = @CategoriaID
+      AND Activo = 1;
 END
 GO
 
@@ -205,6 +201,7 @@ BEGIN
     SELECT ProveedorID, CompaniaNombre, NombreContacto, CargoContacto,
            Direccion, Ciudad, CodigoPostal, Pais, Telefono, Fax
     FROM dbo.Proveedores
+    WHERE Activo = 1
     ORDER BY CompaniaNombre;
 END
 GO
@@ -279,13 +276,10 @@ CREATE OR ALTER PROCEDURE dbo.usp_Proveedor_Eliminar
 AS
 BEGIN
     SET NOCOUNT ON;
-    IF EXISTS (SELECT 1 FROM dbo.Productos WHERE ProveedorID = @ProveedorID)
-    BEGIN
-        RAISERROR(N'No se puede eliminar el proveedor porque tiene productos asociados.', 16, 1);
-        RETURN;
-    END
-
-    DELETE FROM dbo.Proveedores WHERE ProveedorID = @ProveedorID;
+    UPDATE dbo.Proveedores
+    SET Activo = 0
+    WHERE ProveedorID = @ProveedorID
+      AND Activo = 1;
 END
 GO
 
@@ -302,7 +296,8 @@ BEGIN
     SELECT ProveedorID, CompaniaNombre, NombreContacto, CargoContacto,
            Direccion, Ciudad, CodigoPostal, Pais, Telefono, Fax
     FROM dbo.Proveedores
-    WHERE (@NombreContacto IS NULL OR @NombreContacto = N'' OR NombreContacto LIKE N'%' + @NombreContacto + N'%')
+    WHERE Activo = 1
+      AND (@NombreContacto IS NULL OR @NombreContacto = N'' OR NombreContacto LIKE N'%' + @NombreContacto + N'%')
       AND (@Ciudad IS NULL OR @Ciudad = N'' OR Ciudad LIKE N'%' + @Ciudad + N'%')
     ORDER BY CompaniaNombre;
 END
@@ -334,6 +329,7 @@ BEGIN
     LEFT JOIN dbo.Clientes c ON c.ClienteID = p.ClienteID
     LEFT JOIN dbo.Empleados e ON e.EmpleadoID = p.EmpleadoID
     LEFT JOIN dbo.Transportistas t ON t.TransportistaID = p.TransportistaID
+    WHERE p.Activo = 1
     ORDER BY p.FechaPedido DESC, p.PedidoID DESC;
 END
 GO
@@ -423,8 +419,10 @@ CREATE OR ALTER PROCEDURE dbo.usp_Pedido_Eliminar
 AS
 BEGIN
     SET NOCOUNT ON;
-    DELETE FROM dbo.DetallePedidos WHERE PedidoID = @PedidoID;
-    DELETE FROM dbo.Pedidos WHERE PedidoID = @PedidoID;
+    UPDATE dbo.Pedidos
+    SET Activo = 0
+    WHERE PedidoID = @PedidoID
+      AND Activo = 1;
 END
 GO
 
@@ -496,6 +494,7 @@ BEGIN
     INNER JOIN dbo.Pedidos p ON p.PedidoID = d.PedidoID
     INNER JOIN dbo.Productos pr ON pr.ProductoID = d.ProductoID
     WHERE p.FechaPedido BETWEEN @FechaInicio AND @FechaFin
+      AND p.Activo = 1
     ORDER BY p.FechaPedido, d.PedidoID, pr.NombreProducto;
 END
 GO

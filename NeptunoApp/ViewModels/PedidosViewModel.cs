@@ -166,7 +166,7 @@ public class PedidosViewModel : ViewModelBase
 
     private void Eliminar()
     {
-        if (Seleccionado is null || !DialogService.Confirmar($"¿Eliminar el pedido #{Seleccionado.PedidoID} y su detalle?"))
+        if (Seleccionado is null || !DialogService.Confirmar($"¿Dar de baja el pedido #{Seleccionado.PedidoID}? El pedido no se borra, solo se marca como inactivo."))
         {
             return;
         }
@@ -176,7 +176,7 @@ public class PedidosViewModel : ViewModelBase
             _repositorio.Eliminar(Seleccionado.PedidoID);
             Cargar();
             ConsultarReporte();
-            MensajeEstado = "Pedido eliminado.";
+            MensajeEstado = "Pedido dado de baja (eliminación lógica).";
         }
         catch (Exception ex)
         {

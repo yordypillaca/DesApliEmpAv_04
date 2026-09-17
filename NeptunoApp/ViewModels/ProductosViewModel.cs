@@ -105,7 +105,7 @@ public class ProductosViewModel : ViewModelBase
 
     private void Eliminar()
     {
-        if (Seleccionado is null || !DialogService.Confirmar($"¿Eliminar el producto \"{Seleccionado.NombreProducto}\"?"))
+        if (Seleccionado is null || !DialogService.Confirmar($"¿Dar de baja el producto \"{Seleccionado.NombreProducto}\"? El registro no se borra, solo se marca como inactivo."))
         {
             return;
         }
@@ -114,7 +114,7 @@ public class ProductosViewModel : ViewModelBase
         {
             _repositorio.Eliminar(Seleccionado.ProductoID);
             Cargar();
-            MensajeEstado = "Producto eliminado.";
+            MensajeEstado = "Producto dado de baja (eliminación lógica).";
         }
         catch (Exception ex)
         {
