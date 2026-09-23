@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
-using NeptunoApp.Data;
+using Neptuno.Data;
+using Neptuno.Data.Models;
 using NeptunoApp.Helpers;
-using NeptunoApp.Models;
 using NeptunoApp.MVVM;
 
 namespace NeptunoApp.ViewModels;
@@ -16,13 +16,12 @@ public class ProveedoresViewModel : ViewModelBase
 
     public ProveedoresViewModel()
     {
-        CargarCommand = new RelayCommand(_ => Cargar());
-        BuscarCommand = new RelayCommand(_ => Buscar());
-        LimpiarCommand = new RelayCommand(_ => Limpiar());
-        NuevoCommand = new RelayCommand(_ => Nuevo());
-        EditarCommand = new RelayCommand(_ => Editar(), _ => Seleccionado is not null);
-        EliminarCommand = new RelayCommand(_ => Eliminar(), _ => Seleccionado is not null);
-        Cargar();
+        CargarCommand = new AsyncRelayCommand(_ => CargarAsync());
+        BuscarCommand = new AsyncRelayCommand(_ => BuscarAsync());
+        LimpiarCommand = new AsyncRelayCommand(_ => LimpiarAsync());
+        NuevoCommand = new AsyncRelayCommand(_ => NuevoAsync());
+        EditarCommand = new AsyncRelayCommand(_ => EditarAsync(), _ => Seleccionado is not null);
+        EliminarCommand = new AsyncRelayCommand(_ => EliminarAsync(), _ => Seleccionado is not null);
     }
 
     public ObservableCollection<Proveedor> Proveedores { get; } = [];
@@ -51,18 +50,18 @@ public class ProveedoresViewModel : ViewModelBase
         private set => SetField(ref _mensajeEstado, value);
     }
 
-    public RelayCommand CargarCommand { get; }
-    public RelayCommand BuscarCommand { get; }
-    public RelayCommand LimpiarCommand { get; }
-    public RelayCommand NuevoCommand { get; }
-    public RelayCommand EditarCommand { get; }
-    public RelayCommand EliminarCommand { get; }
+    public AsyncRelayCommand CargarCommand { get; }
+    public AsyncRelayCommand BuscarCommand { get; }
+    public AsyncRelayCommand LimpiarCommand { get; }
+    public AsyncRelayCommand NuevoCommand { get; }
+    public AsyncRelayCommand EditarCommand { get; }
+    public AsyncRelayCommand EliminarCommand { get; }
 
-    public void Cargar()
+    public async Task CargarAsync()
     {
         try
         {
-            Reemplazar(_repositorio.Listar());
+            Reemplazar(await _repositorio.ListarAsync());
             MensajeEstado = $"{Proveedores.Count} proveedor(es) cargado(s).";
         }
         catch (Exception ex)
@@ -71,11 +70,11 @@ public class ProveedoresViewModel : ViewModelBase
         }
     }
 
-    private void Buscar()
+    private async Task BuscarAsync()
     {
         try
         {
-            Reemplazar(_repositorio.Buscar(FiltroContacto, FiltroCiudad));
+            Reemplazar(await _repositorio.BuscarAsync(FiltroContacto, FiltroCiudad));
             MensajeEstado = $"{Proveedores.Count} proveedor(es) encontrados con los filtros.";
         }
         catch (Exception ex)
@@ -84,25 +83,25 @@ public class ProveedoresViewModel : ViewModelBase
         }
     }
 
-    private void Limpiar()
+    private async Task LimpiarAsync()
     {
         FiltroContacto = string.Empty;
         FiltroCiudad = string.Empty;
-        Cargar();
+        await CargarAsync();
     }
 
-    private void Nuevo()
+    private async Task NuevoAsync()
     {
         var editor = new ProveedorEditorViewModel();
-        if (DialogService.EditarProveedor(editor) != true)
+        if (await DialogService.EditarProveedorAsync(editor) != true)
         {
             return;
         }
 
         try
         {
-            _repositorio.Insertar(editor.ToModelo());
-            Cargar();
+            await _repositorio.InsertarAsync(editor.ToModelo());
+            await CargarAsync();
             MensajeEstado = "Proveedor registrado.";
         }
         catch (Exception ex)
@@ -111,7 +110,7 @@ public class ProveedoresViewModel : ViewModelBase
         }
     }
 
-    private void Editar()
+    private async Task EditarAsync()
     {
         if (Seleccionado is null)
         {
@@ -119,15 +118,15 @@ public class ProveedoresViewModel : ViewModelBase
         }
 
         var editor = new ProveedorEditorViewModel(Seleccionado);
-        if (DialogService.EditarProveedor(editor) != true)
+        if (await DialogService.EditarProveedorAsync(editor) != true)
         {
             return;
         }
 
         try
         {
-            _repositorio.Actualizar(editor.ToModelo());
-            Cargar();
+            await _repositorio.ActualizarAsync(editor.ToModelo());
+            await CargarAsync();
             MensajeEstado = "Proveedor actualizado.";
         }
         catch (Exception ex)
@@ -136,7 +135,7 @@ public class ProveedoresViewModel : ViewModelBase
         }
     }
 
-    private void Eliminar()
+    private async Task EliminarAsync()
     {
         if (Seleccionado is null || !DialogService.Confirmar($"¿Dar de baja el proveedor \"{Seleccionado.CompaniaNombre}\"? El registro no se borra, solo se marca como inactivo."))
         {
@@ -145,8 +144,8 @@ public class ProveedoresViewModel : ViewModelBase
 
         try
         {
-            _repositorio.Eliminar(Seleccionado.ProveedorID);
-            Cargar();
+            await _repositorio.EliminarAsync(Seleccionado.ProveedorID);
+            await CargarAsync();
             MensajeEstado = "Proveedor dado de baja (eliminación lógica).";
         }
         catch (Exception ex)

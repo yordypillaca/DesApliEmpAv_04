@@ -39,8 +39,6 @@ public class MainViewModel : ViewModelBase
                 new NavItem { Titulo = "Reportes", Clave = "reportes" }
             }
         });
-
-        Navegar("inicio");
     }
 
     public InicioViewModel Inicio { get; }
@@ -63,50 +61,50 @@ public class MainViewModel : ViewModelBase
         private set => SetField(ref _tituloPagina, value);
     }
 
-    public void Navegar(string clave)
+    public async Task NavegarAsync(string clave)
     {
         switch (clave)
         {
             case "inicio":
-                Inicio.Cargar();
                 VistaActual = Inicio;
                 TituloPagina = "Inicio";
+                await Inicio.CargarAsync();
                 break;
             case "catalogo":
                 Catalogo.TabSeleccionado = 0;
-                Productos.Cargar();
                 VistaActual = Catalogo;
                 TituloPagina = "Catálogo";
+                await Productos.CargarAsync();
                 break;
             case "productos":
                 Catalogo.TabSeleccionado = 0;
-                Productos.Cargar();
                 VistaActual = Catalogo;
                 TituloPagina = "Productos";
+                await Productos.CargarAsync();
                 break;
             case "categorias":
                 Catalogo.TabSeleccionado = 1;
-                Categorias.Cargar();
                 VistaActual = Catalogo;
                 TituloPagina = "Categorías";
+                await Categorias.CargarAsync();
                 break;
             case "proveedores":
                 Catalogo.TabSeleccionado = 2;
-                Proveedores.Cargar();
                 VistaActual = Catalogo;
                 TituloPagina = "Proveedores";
+                await Proveedores.CargarAsync();
                 break;
             case "pedidos":
                 Pedidos.TabSeleccionado = 0;
-                Pedidos.Cargar();
                 VistaActual = Pedidos;
                 TituloPagina = "Pedidos";
+                await Pedidos.CargarAsync();
                 break;
             case "reportes":
                 Pedidos.TabSeleccionado = 1;
-                Pedidos.ConsultarReporte();
                 VistaActual = Pedidos;
                 TituloPagina = "Reportes de pedidos";
+                await Pedidos.ConsultarReporteAsync();
                 break;
         }
     }

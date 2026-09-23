@@ -1,12 +1,13 @@
 using System.Collections.ObjectModel;
-using NeptunoApp.Data;
-using NeptunoApp.Models;
+using Neptuno.Data;
+using Neptuno.Data.Models;
 using NeptunoApp.MVVM;
 
 namespace NeptunoApp.ViewModels;
 
 public class ProductoEditorViewModel : ViewModelBase
 {
+    private readonly Producto? _original;
     private string _nombreProducto = string.Empty;
     private Categoria? _categoriaSeleccionada;
     private Proveedor? _proveedorSeleccionado;
@@ -20,35 +21,17 @@ public class ProductoEditorViewModel : ViewModelBase
 
     public ProductoEditorViewModel(Producto? producto = null)
     {
+        _original = producto;
         EsNuevo = producto is null;
         Titulo = EsNuevo ? "Nuevo producto" : "Editar producto";
         ProductoID = producto?.ProductoID ?? 0;
-
-        var categorias = new CategoriaRepository().Listar();
-        categorias.Insert(0, new Categoria { CategoriaID = 0, NombreCategoria = "(Sin categoría)" });
-        Categorias = new ObservableCollection<Categoria>(categorias);
-
-        var proveedores = new ProveedorRepository().Listar();
-        proveedores.Insert(0, new Proveedor { ProveedorID = 0, CompaniaNombre = "(Sin proveedor)" });
-        Proveedores = new ObservableCollection<Proveedor>(proveedores);
-
-        if (producto is not null)
-        {
-            NombreProducto = producto.NombreProducto;
-            CategoriaSeleccionada = Categorias.FirstOrDefault(c => c.CategoriaID == (producto.CategoriaID ?? 0));
-            ProveedorSeleccionado = Proveedores.FirstOrDefault(p => p.ProveedorID == (producto.ProveedorID ?? 0));
-            CantidadPorUnidad = producto.CantidadPorUnidad;
-            PrecioUnidad = producto.PrecioUnidad;
-            UnidadesEnExistencia = producto.UnidadesEnExistencia;
-            UnidadesEnPedido = producto.UnidadesEnPedido;
-            NivelDeReorden = producto.NivelDeReorden;
-            Descontinuado = producto.Descontinuado;
-        }
-        else
-        {
-            CategoriaSeleccionada = Categorias[0];
-            ProveedorSeleccionado = Proveedores[0];
-        }
+        NombreProducto = producto?.NombreProducto ?? string.Empty;
+        CantidadPorUnidad = producto?.CantidadPorUnidad;
+        PrecioUnidad = producto?.PrecioUnidad ?? 0;
+        UnidadesEnExistencia = producto?.UnidadesEnExistencia ?? 0;
+        UnidadesEnPedido = producto?.UnidadesEnPedido ?? 0;
+        NivelDeReorden = producto?.NivelDeReorden ?? 0;
+        Descontinuado = producto?.Descontinuado ?? false;
 
         AceptarCommand = new RelayCommand(_ => Aceptar());
         CancelarCommand = new RelayCommand(_ => Cancelar());
@@ -59,8 +42,8 @@ public class ProductoEditorViewModel : ViewModelBase
     public bool EsNuevo { get; }
     public string Titulo { get; }
     public int ProductoID { get; }
-    public ObservableCollection<Categoria> Categorias { get; }
-    public ObservableCollection<Proveedor> Proveedores { get; }
+    public ObservableCollection<Categoria> Categorias { get; } = [];
+    public ObservableCollection<Proveedor> Proveedores { get; } = [];
 
     public string NombreProducto
     {
@@ -124,6 +107,28 @@ public class ProductoEditorViewModel : ViewModelBase
 
     public RelayCommand AceptarCommand { get; }
     public RelayCommand CancelarCommand { get; }
+
+    public async Task CargarCombosAsync()
+    {
+        var categorias = await new CategoriaRepository().ListarAsync();
+        categorias.Insert(0, new Categoria { CategoriaID = 0, NombreCategoria = "(Sin categoría)" });
+        Categorias.Clear();
+        foreach (var categoria in categorias)
+        {
+            Categorias.Add(categoria);
+        }
+
+        var proveedores = await new ProveedorRepository().ListarAsync();
+        proveedores.Insert(0, new Proveedor { ProveedorID = 0, CompaniaNombre = "(Sin proveedor)" });
+        Proveedores.Clear();
+        foreach (var proveedor in proveedores)
+        {
+            Proveedores.Add(proveedor);
+        }
+
+        CategoriaSeleccionada = Categorias.FirstOrDefault(c => c.CategoriaID == (_original?.CategoriaID ?? 0));
+        ProveedorSeleccionado = Proveedores.FirstOrDefault(p => p.ProveedorID == (_original?.ProveedorID ?? 0));
+    }
 
     public Producto ToModelo()
     {

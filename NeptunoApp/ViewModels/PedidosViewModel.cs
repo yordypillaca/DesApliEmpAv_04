@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
-using NeptunoApp.Data;
+using Neptuno.Data;
+using Neptuno.Data.Models;
 using NeptunoApp.Helpers;
-using NeptunoApp.Models;
 using NeptunoApp.MVVM;
 
 namespace NeptunoApp.ViewModels;
@@ -18,13 +18,11 @@ public class PedidosViewModel : ViewModelBase
 
     public PedidosViewModel()
     {
-        CargarCommand = new RelayCommand(_ => Cargar());
-        NuevoCommand = new RelayCommand(_ => Nuevo());
-        EditarCommand = new RelayCommand(_ => Editar(), _ => Seleccionado is not null);
-        EliminarCommand = new RelayCommand(_ => Eliminar(), _ => Seleccionado is not null);
-        ConsultarReporteCommand = new RelayCommand(_ => ConsultarReporte());
-        Cargar();
-        ConsultarReporte();
+        CargarCommand = new AsyncRelayCommand(_ => CargarAsync());
+        NuevoCommand = new AsyncRelayCommand(_ => NuevoAsync());
+        EditarCommand = new AsyncRelayCommand(_ => EditarAsync(), _ => Seleccionado is not null);
+        EliminarCommand = new AsyncRelayCommand(_ => EliminarAsync(), _ => Seleccionado is not null);
+        ConsultarReporteCommand = new AsyncRelayCommand(_ => ConsultarReporteAsync());
     }
 
     public ObservableCollection<Pedido> Pedidos { get; } = [];
@@ -68,18 +66,19 @@ public class PedidosViewModel : ViewModelBase
 
     public decimal TotalReporte => Reporte.Sum(d => d.Importe);
 
-    public RelayCommand CargarCommand { get; }
-    public RelayCommand NuevoCommand { get; }
-    public RelayCommand EditarCommand { get; }
-    public RelayCommand EliminarCommand { get; }
-    public RelayCommand ConsultarReporteCommand { get; }
+    public AsyncRelayCommand CargarCommand { get; }
+    public AsyncRelayCommand NuevoCommand { get; }
+    public AsyncRelayCommand EditarCommand { get; }
+    public AsyncRelayCommand EliminarCommand { get; }
+    public AsyncRelayCommand ConsultarReporteCommand { get; }
 
-    public void Cargar()
+    public async Task CargarAsync()
     {
         try
         {
+            var lista = await _repositorio.ListarAsync();
             Pedidos.Clear();
-            foreach (var pedido in _repositorio.Listar())
+            foreach (var pedido in lista)
             {
                 Pedidos.Add(pedido);
             }
@@ -92,7 +91,7 @@ public class PedidosViewModel : ViewModelBase
         }
     }
 
-    public void ConsultarReporte()
+    public async Task ConsultarReporteAsync()
     {
         try
         {
@@ -102,8 +101,9 @@ public class PedidosViewModel : ViewModelBase
                 return;
             }
 
+            var lineas = await _repositorio.ListarDetallesPorFechasAsync(FechaInicio, FechaFin);
             Reporte.Clear();
-            foreach (var linea in _repositorio.ListarDetallesPorFechas(FechaInicio, FechaFin))
+            foreach (var linea in lineas)
             {
                 Reporte.Add(linea);
             }
@@ -117,19 +117,19 @@ public class PedidosViewModel : ViewModelBase
         }
     }
 
-    private void Nuevo()
+    private async Task NuevoAsync()
     {
         var editor = new PedidoEditorViewModel();
-        if (DialogService.EditarPedido(editor) != true)
+        if (await DialogService.EditarPedidoAsync(editor) != true)
         {
             return;
         }
 
         try
         {
-            _repositorio.Guardar(editor.ToModelo(), editor.Detalles.ToList());
-            Cargar();
-            ConsultarReporte();
+            await _repositorio.GuardarAsync(editor.ToModelo(), editor.Detalles.ToList());
+            await CargarAsync();
+            await ConsultarReporteAsync();
             MensajeEstado = "Pedido registrado.";
         }
         catch (Exception ex)
@@ -138,7 +138,7 @@ public class PedidosViewModel : ViewModelBase
         }
     }
 
-    private void Editar()
+    private async Task EditarAsync()
     {
         if (Seleccionado is null)
         {
@@ -146,16 +146,16 @@ public class PedidosViewModel : ViewModelBase
         }
 
         var editor = new PedidoEditorViewModel(Seleccionado);
-        if (DialogService.EditarPedido(editor) != true)
+        if (await DialogService.EditarPedidoAsync(editor) != true)
         {
             return;
         }
 
         try
         {
-            _repositorio.Guardar(editor.ToModelo(), editor.Detalles.ToList());
-            Cargar();
-            ConsultarReporte();
+            await _repositorio.GuardarAsync(editor.ToModelo(), editor.Detalles.ToList());
+            await CargarAsync();
+            await ConsultarReporteAsync();
             MensajeEstado = "Pedido actualizado.";
         }
         catch (Exception ex)
@@ -164,7 +164,7 @@ public class PedidosViewModel : ViewModelBase
         }
     }
 
-    private void Eliminar()
+    private async Task EliminarAsync()
     {
         if (Seleccionado is null || !DialogService.Confirmar($"¿Dar de baja el pedido #{Seleccionado.PedidoID}? El pedido no se borra, solo se marca como inactivo."))
         {
@@ -173,9 +173,9 @@ public class PedidosViewModel : ViewModelBase
 
         try
         {
-            _repositorio.Eliminar(Seleccionado.PedidoID);
-            Cargar();
-            ConsultarReporte();
+            await _repositorio.EliminarAsync(Seleccionado.PedidoID);
+            await CargarAsync();
+            await ConsultarReporteAsync();
             MensajeEstado = "Pedido dado de baja (eliminación lógica).";
         }
         catch (Exception ex)

@@ -1,12 +1,13 @@
 using System.Collections.ObjectModel;
-using NeptunoApp.Data;
-using NeptunoApp.Models;
+using Neptuno.Data;
+using Neptuno.Data.Models;
 using NeptunoApp.MVVM;
 
 namespace NeptunoApp.ViewModels;
 
 public class PedidoEditorViewModel : ViewModelBase
 {
+    private readonly Pedido? _original;
     private Cliente? _clienteSeleccionado;
     private Empleado? _empleadoSeleccionado;
     private Transportista? _transportistaSeleccionado;
@@ -24,32 +25,48 @@ public class PedidoEditorViewModel : ViewModelBase
 
     public PedidoEditorViewModel(Pedido? pedido = null)
     {
+        _original = pedido;
         EsNuevo = pedido is null;
         Titulo = EsNuevo ? "Nuevo pedido" : $"Editar pedido #{pedido!.PedidoID}";
         PedidoID = pedido?.PedidoID ?? 0;
 
-        var catalogo = new CatalogoRepository();
-        Clientes = new ObservableCollection<Cliente>(catalogo.ListarClientes());
-        Empleados = new ObservableCollection<Empleado>(catalogo.ListarEmpleados());
-        Transportistas = new ObservableCollection<Transportista>(catalogo.ListarTransportistas());
-        Productos = new ObservableCollection<Producto>(new ProductoRepository().Listar());
-
         if (pedido is not null)
         {
-            ClienteSeleccionado = Clientes.FirstOrDefault(c => c.ClienteID == pedido.ClienteID);
-            EmpleadoSeleccionado = Empleados.FirstOrDefault(e => e.EmpleadoID == pedido.EmpleadoID);
-            TransportistaSeleccionado = Transportistas.FirstOrDefault(t => t.TransportistaID == pedido.TransportistaID);
             FechaPedido = pedido.FechaPedido;
             FechaRequerida = pedido.FechaRequerida;
             FechaEnvio = pedido.FechaEnvio;
             Destinatario = pedido.Destinatario;
             CiudadDestino = pedido.CiudadDestino;
             PaisDestino = pedido.PaisDestino;
+        }
 
-            foreach (var linea in new PedidoRepository().ListarDetalles(pedido.PedidoID))
+        AgregarLineaCommand = new RelayCommand(_ => AgregarLinea(), _ => ProductoParaAgregar is not null && CantidadNueva > 0);
+        QuitarLineaCommand = new RelayCommand(_ => QuitarLinea(), _ => DetalleSeleccionado is not null);
+        AceptarCommand = new RelayCommand(_ => Aceptar());
+        CancelarCommand = new RelayCommand(_ => Cancelar());
+    }
+
+    public async Task CargarCombosAsync()
+    {
+        var catalogo = new CatalogoRepository();
+        Reemplazar(Clientes, await catalogo.ListarClientesAsync());
+        Reemplazar(Empleados, await catalogo.ListarEmpleadosAsync());
+        Reemplazar(Transportistas, await catalogo.ListarTransportistasAsync());
+        Reemplazar(Productos, await new ProductoRepository().ListarAsync());
+
+        if (_original is not null)
+        {
+            ClienteSeleccionado = Clientes.FirstOrDefault(c => c.ClienteID == _original.ClienteID);
+            EmpleadoSeleccionado = Empleados.FirstOrDefault(e => e.EmpleadoID == _original.EmpleadoID);
+            TransportistaSeleccionado = Transportistas.FirstOrDefault(t => t.TransportistaID == _original.TransportistaID);
+
+            Detalles.Clear();
+            foreach (var linea in await new PedidoRepository().ListarDetallesAsync(_original.PedidoID))
             {
                 Detalles.Add(linea);
             }
+
+            OnPropertyChanged(nameof(Total));
         }
         else
         {
@@ -62,11 +79,15 @@ public class PedidoEditorViewModel : ViewModelBase
         }
 
         ProductoParaAgregar = Productos.FirstOrDefault();
+    }
 
-        AgregarLineaCommand = new RelayCommand(_ => AgregarLinea(), _ => ProductoParaAgregar is not null && CantidadNueva > 0);
-        QuitarLineaCommand = new RelayCommand(_ => QuitarLinea(), _ => DetalleSeleccionado is not null);
-        AceptarCommand = new RelayCommand(_ => Aceptar());
-        CancelarCommand = new RelayCommand(_ => Cancelar());
+    private static void Reemplazar<T>(ObservableCollection<T> destino, IEnumerable<T> origen)
+    {
+        destino.Clear();
+        foreach (var item in origen)
+        {
+            destino.Add(item);
+        }
     }
 
     public event Action<bool>? SolicitarCierre;
@@ -74,10 +95,10 @@ public class PedidoEditorViewModel : ViewModelBase
     public bool EsNuevo { get; }
     public string Titulo { get; }
     public int PedidoID { get; }
-    public ObservableCollection<Cliente> Clientes { get; }
-    public ObservableCollection<Empleado> Empleados { get; }
-    public ObservableCollection<Transportista> Transportistas { get; }
-    public ObservableCollection<Producto> Productos { get; }
+    public ObservableCollection<Cliente> Clientes { get; } = [];
+    public ObservableCollection<Empleado> Empleados { get; } = [];
+    public ObservableCollection<Transportista> Transportistas { get; } = [];
+    public ObservableCollection<Producto> Productos { get; } = [];
     public ObservableCollection<DetallePedido> Detalles { get; } = [];
 
     public Cliente? ClienteSeleccionado

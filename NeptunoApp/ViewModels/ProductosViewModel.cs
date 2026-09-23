@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
-using NeptunoApp.Data;
+using Neptuno.Data;
+using Neptuno.Data.Models;
 using NeptunoApp.Helpers;
-using NeptunoApp.Models;
 using NeptunoApp.MVVM;
 
 namespace NeptunoApp.ViewModels;
@@ -14,11 +14,10 @@ public class ProductosViewModel : ViewModelBase
 
     public ProductosViewModel()
     {
-        CargarCommand = new RelayCommand(_ => Cargar());
-        NuevoCommand = new RelayCommand(_ => Nuevo());
-        EditarCommand = new RelayCommand(_ => Editar(), _ => Seleccionado is not null);
-        EliminarCommand = new RelayCommand(_ => Eliminar(), _ => Seleccionado is not null);
-        Cargar();
+        CargarCommand = new AsyncRelayCommand(_ => CargarAsync());
+        NuevoCommand = new AsyncRelayCommand(_ => NuevoAsync());
+        EditarCommand = new AsyncRelayCommand(_ => EditarAsync(), _ => Seleccionado is not null);
+        EliminarCommand = new AsyncRelayCommand(_ => EliminarAsync(), _ => Seleccionado is not null);
     }
 
     public ObservableCollection<Producto> Productos { get; } = [];
@@ -35,17 +34,18 @@ public class ProductosViewModel : ViewModelBase
         private set => SetField(ref _mensajeEstado, value);
     }
 
-    public RelayCommand CargarCommand { get; }
-    public RelayCommand NuevoCommand { get; }
-    public RelayCommand EditarCommand { get; }
-    public RelayCommand EliminarCommand { get; }
+    public AsyncRelayCommand CargarCommand { get; }
+    public AsyncRelayCommand NuevoCommand { get; }
+    public AsyncRelayCommand EditarCommand { get; }
+    public AsyncRelayCommand EliminarCommand { get; }
 
-    public void Cargar()
+    public async Task CargarAsync()
     {
         try
         {
+            var lista = await _repositorio.ListarAsync();
             Productos.Clear();
-            foreach (var producto in _repositorio.Listar())
+            foreach (var producto in lista)
             {
                 Productos.Add(producto);
             }
@@ -58,18 +58,18 @@ public class ProductosViewModel : ViewModelBase
         }
     }
 
-    private void Nuevo()
+    private async Task NuevoAsync()
     {
         var editor = new ProductoEditorViewModel();
-        if (DialogService.EditarProducto(editor) != true)
+        if (await DialogService.EditarProductoAsync(editor) != true)
         {
             return;
         }
 
         try
         {
-            _repositorio.Insertar(editor.ToModelo());
-            Cargar();
+            await _repositorio.InsertarAsync(editor.ToModelo());
+            await CargarAsync();
             MensajeEstado = "Producto registrado.";
         }
         catch (Exception ex)
@@ -78,7 +78,7 @@ public class ProductosViewModel : ViewModelBase
         }
     }
 
-    private void Editar()
+    private async Task EditarAsync()
     {
         if (Seleccionado is null)
         {
@@ -86,15 +86,15 @@ public class ProductosViewModel : ViewModelBase
         }
 
         var editor = new ProductoEditorViewModel(Seleccionado);
-        if (DialogService.EditarProducto(editor) != true)
+        if (await DialogService.EditarProductoAsync(editor) != true)
         {
             return;
         }
 
         try
         {
-            _repositorio.Actualizar(editor.ToModelo());
-            Cargar();
+            await _repositorio.ActualizarAsync(editor.ToModelo());
+            await CargarAsync();
             MensajeEstado = "Producto actualizado.";
         }
         catch (Exception ex)
@@ -103,7 +103,7 @@ public class ProductosViewModel : ViewModelBase
         }
     }
 
-    private void Eliminar()
+    private async Task EliminarAsync()
     {
         if (Seleccionado is null || !DialogService.Confirmar($"¿Dar de baja el producto \"{Seleccionado.NombreProducto}\"? El registro no se borra, solo se marca como inactivo."))
         {
@@ -112,8 +112,8 @@ public class ProductosViewModel : ViewModelBase
 
         try
         {
-            _repositorio.Eliminar(Seleccionado.ProductoID);
-            Cargar();
+            await _repositorio.EliminarAsync(Seleccionado.ProductoID);
+            await CargarAsync();
             MensajeEstado = "Producto dado de baja (eliminación lógica).";
         }
         catch (Exception ex)

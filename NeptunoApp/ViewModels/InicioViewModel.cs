@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
-using NeptunoApp.Data;
-using NeptunoApp.Models;
+using Neptuno.Data;
+using Neptuno.Data.Models;
 using NeptunoApp.MVVM;
 
 namespace NeptunoApp.ViewModels;
@@ -17,7 +17,6 @@ public class InicioViewModel : ViewModelBase
     {
         AnteriorCommand = new RelayCommand(_ => Mover(-1), _ => Slides.Count > 0);
         SiguienteCommand = new RelayCommand(_ => Mover(1), _ => Slides.Count > 0);
-        Cargar();
     }
 
     public ObservableCollection<CategoriaCarrusel> Slides { get; } = [];
@@ -48,13 +47,13 @@ public class InicioViewModel : ViewModelBase
     public RelayCommand AnteriorCommand { get; }
     public RelayCommand SiguienteCommand { get; }
 
-    public void Cargar()
+    public async Task CargarAsync()
     {
         try
         {
-            var categorias = new CategoriaRepository().Listar();
-            var productos = new ProductoRepository().Listar();
-            var pedidos = new PedidoRepository().Listar();
+            var categorias = await new CategoriaRepository().ListarAsync();
+            var productos = await new ProductoRepository().ListarAsync();
+            var pedidos = await new PedidoRepository().ListarAsync();
 
             Slides.Clear();
             foreach (var categoria in categorias)

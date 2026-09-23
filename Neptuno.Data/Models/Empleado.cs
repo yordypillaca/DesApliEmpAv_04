@@ -1,4 +1,4 @@
-namespace NeptunoApp.Models;
+namespace Neptuno.Data.Models;
 
 public class Empleado
 {

@@ -1,4 +1,4 @@
-using NeptunoApp.Models;
+using Neptuno.Data.Models;
 using NeptunoApp.MVVM;
 
 namespace NeptunoApp.ViewModels;

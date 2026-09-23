@@ -15,27 +15,28 @@ public static class DialogService
                == MessageBoxResult.Yes;
     }
 
-    public static void Aviso(string mensaje, string titulo = "Neptuno")
-    {
-        MessageBox.Show(mensaje, titulo, MessageBoxButton.OK, MessageBoxImage.Information);
-    }
-
     public static void Error(string mensaje, string titulo = "Error")
     {
         MessageBox.Show(mensaje, titulo, MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
-    public static bool? EditarCategoria(CategoriaEditorViewModel vm)
-        => Mostrar(new CategoriaEditorWindow { DataContext = vm });
+    public static Task<bool?> EditarCategoriaAsync(CategoriaEditorViewModel vm)
+        => Task.FromResult(Mostrar(new CategoriaEditorWindow { DataContext = vm }));
 
-    public static bool? EditarProducto(ProductoEditorViewModel vm)
-        => Mostrar(new ProductoEditorWindow { DataContext = vm });
+    public static async Task<bool?> EditarProductoAsync(ProductoEditorViewModel vm)
+    {
+        await vm.CargarCombosAsync();
+        return Mostrar(new ProductoEditorWindow { DataContext = vm });
+    }
 
-    public static bool? EditarProveedor(ProveedorEditorViewModel vm)
-        => Mostrar(new ProveedorEditorWindow { DataContext = vm });
+    public static Task<bool?> EditarProveedorAsync(ProveedorEditorViewModel vm)
+        => Task.FromResult(Mostrar(new ProveedorEditorWindow { DataContext = vm }));
 
-    public static bool? EditarPedido(PedidoEditorViewModel vm)
-        => Mostrar(new PedidoEditorWindow { DataContext = vm });
+    public static async Task<bool?> EditarPedidoAsync(PedidoEditorViewModel vm)
+    {
+        await vm.CargarCombosAsync();
+        return Mostrar(new PedidoEditorWindow { DataContext = vm });
+    }
 
     private static bool? Mostrar(Window ventana)
     {
